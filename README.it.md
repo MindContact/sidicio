@@ -196,6 +196,11 @@ sidicio è un port di `native/sid_chip.cpp` di **Chip**, un'app sintetizzatore
 SID per Android dello stesso autore. Una correzione all'emulazione in uno dei
 due va valutata anche nell'altro.
 
+Come funziona dentro (il chip, i player, il worklet) è in
+[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md); ricette, registrazione offline
+in WAV, test e impronta in [docs/TECHNICAL.md](docs/TECHNICAL.md) (tutti e due
+in inglese).
+
 ### Pubblicare una versione
 
 1. Aggiornare `version` in `package.json` e fare commit.

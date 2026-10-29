@@ -192,6 +192,11 @@ sidicio is a port of `native/sid_chip.cpp` from **Chip**, a SID synthesizer app
 for Android by the same author. A fix to the emulation in one is worth checking
 in the other.
 
+How it works inside (the chip, the players, the worklet) is in
+[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md); recipes, offline rendering to
+WAV, testing and the golden hash in [docs/TECHNICAL.md](docs/TECHNICAL.md)
+(both in English).
+
 ### Releasing
 
 1. Bump `version` in `package.json` and commit.
