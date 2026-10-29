@@ -1,6 +1,6 @@
 {
   "name": "sidicio",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "MOS 6581/8580 SID chip emulation in plain JavaScript, with a music player, a sound-effect player and a text song format, running in an AudioWorklet or in Node.",
   "type": "module",
   "main": "./src/index.js",
