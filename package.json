@@ -13,7 +13,7 @@
     "README.it.md"
   ],
   "scripts": {
-    "test": "node --test test/sidicio.test.mjs",
+    "test": "node --test test/sidicio.test.mjs test/readme.test.mjs",
     "demo": "node tools/serve.mjs 8138"
   },
   "keywords": ["sid", "c64", "commodore", "6581", "8580", "chiptune", "synth", "audioworklet", "webaudio", "emulator"],
