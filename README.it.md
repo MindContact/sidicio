@@ -196,6 +196,15 @@ sidicio è un port di `native/sid_chip.cpp` di **Chip**, un'app sintetizzatore
 SID per Android dello stesso autore. Una correzione all'emulazione in uno dei
 due va valutata anche nell'altro.
 
+### Pubblicare una versione
+
+1. Aggiornare `version` in `package.json` e fare commit.
+2. `git tag vX.Y.Z && git push origin main vX.Y.Z`.
+3. Il workflow `release` esegue i test e mette la versione in attesa su npm
+   con il trusted publishing (nessun token nel repository).
+4. Approvarla su npmjs.com, scheda *Staged Packages*, con la 2FA. Fino ad
+   allora non è pubblica.
+
 ## Licenza
 
 [MIT](LICENSE) © MindContact | Roberto Luttino

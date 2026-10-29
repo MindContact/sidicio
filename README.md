@@ -192,6 +192,15 @@ sidicio is a port of `native/sid_chip.cpp` from **Chip**, a SID synthesizer app
 for Android by the same author. A fix to the emulation in one is worth checking
 in the other.
 
+### Releasing
+
+1. Bump `version` in `package.json` and commit.
+2. `git tag vX.Y.Z && git push origin main vX.Y.Z`.
+3. The `release` workflow runs the tests and stages the version on npm
+   through trusted publishing (no token in the repository).
+4. Approve it on npmjs.com, *Staged Packages* tab, with 2FA. Until then
+   nothing is public.
+
 ## License
 
 [MIT](LICENSE) © MindContact | Roberto Luttino

@@ -1,0 +1,38 @@
+# Stages a release on npm when a version tag is pushed (git tag v0.2.0 &&
+# git push origin v0.2.0).
+#
+# It uses npm trusted publishing (OIDC): no token is stored in the
+# repository. The version is only staged, not published: a maintainer approves
+# it on npmjs.com (Staged Packages tab) with 2FA, so a compromised workflow
+# alone cannot put code on the registry.
+#
+# The trusted publisher on npmjs.com must name this file, release.yml.
+name: release
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  stage:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          # Staged publishing needs npm 11.15 or later; Node 26 ships with it.
+          node-version: 26
+          registry-url: https://registry.npmjs.org
+      - name: Tag matches package.json
+        run: |
+          version=$(node -p "require('./package.json').version")
+          if [ "v$version" != "$GITHUB_REF_NAME" ]; then
+            echo "Tag $GITHUB_REF_NAME does not match package.json version $version" >&2
+            exit 1
+          fi
+      - run: npm test
+      - run: npm stage publish --access public
