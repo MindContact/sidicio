@@ -1,0 +1,29 @@
+{
+  "name": "sidicio",
+  "version": "0.1.0",
+  "description": "MOS 6581/8580 SID chip emulation in plain JavaScript, with a music player, a sound-effect player and a text song format, running in an AudioWorklet or in Node.",
+  "type": "module",
+  "main": "./src/index.js",
+  "exports": {
+    ".": "./src/index.js",
+    "./worklet": "./src/worklet.js"
+  },
+  "files": [
+    "src",
+    "README.it.md"
+  ],
+  "scripts": {
+    "test": "node --test test/sidicio.test.mjs",
+    "demo": "node tools/serve.mjs 8138"
+  },
+  "keywords": ["sid", "c64", "commodore", "6581", "8580", "chiptune", "synth", "audioworklet", "webaudio", "emulator"],
+  "author": "MindContact | Roberto Luttino",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/MindContact/sidicio.git"
+  },
+  "homepage": "https://github.com/MindContact/sidicio#readme",
+  "bugs": "https://github.com/MindContact/sidicio/issues",
+  "engines": { "node": ">=18" }
+}

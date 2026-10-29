@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>sidicio demo</title>
+  <style>
+    body { font: 16px/1.5 monospace; background: #111; color: #ddd; max-width: 40rem; margin: 3rem auto; padding: 0 1rem; }
+    h2 { font-size: 1rem; margin: 1.5rem 0 0.4rem; color: #9ad; }
+    button { font: inherit; margin: 0.2rem; padding: 0.3rem 0.8rem; }
+    button.playing { background: #9ad; }
+    label { display: grid; grid-template-columns: 5rem 1fr 2.5rem; align-items: center; gap: 0.6rem; }
+    input[type=range] { width: 100%; }
+    #status { color: #888; }
+  </style>
+</head>
+<body>
+  <h1>sidicio</h1>
+  <p>Two emulated SID chips in an AudioWorklet: one plays the song, the other the effects.</p>
+
+  <h2>Songs</h2>
+  <p id="songs"></p>
+  <p>
+    <button id="stop">Stop</button>
+    <button id="model">Model: 6581</button>
+    <span id="status">stopped</span>
+  </p>
+
+  <h2>Effects</h2>
+  <p id="effects"></p>
+
+  <h2>Volume</h2>
+  <label>Music <input id="music" type="range" min="0" max="10" value="6"> <span></span></label>
+  <label>Effects <input id="sfx" type="range" min="0" max="10" value="9"> <span></span></label>
+
+  <script type="module">
+    import { createSidicioNode, compileSong } from '../src/index.js';
+    import { INSTRUMENTS, DRUMS, DEFAULTS, SONGS, SFX } from './demo.js';
+
+    const $ = (id) => document.getElementById(id);
+    let node = null;
+    let model = 6581;
+
+    // Browsers only start audio from a user gesture, so the context is made
+    // on the first click.
+    async function sid() {
+      if (node) return node;
+      const ctx = new AudioContext();
+      node = await createSidicioNode(ctx);
+      node.connect(ctx.destination);
+      const songs = {};
+      for (const [name, song] of Object.entries(SONGS)) {
+        songs[name] = compileSong(song, INSTRUMENTS, { drums: DRUMS, defaults: DEFAULTS, name });
+      }
+      node.port.postMessage({ type: 'songs', songs });
+      node.port.postMessage({ type: 'sfxDefs', defs: SFX });
+      node.port.onmessage = (e) => { if (e.data.type === 'songEnd') show(null); };
+      sendGain();
+      return node;
+    }
+
+    function show(name) {
+      $('status').textContent = name ? `playing ${SONGS[name].title}` : 'stopped';
+      for (const b of $('songs').children) b.classList.toggle('playing', b.dataset.song === name);
+    }
+
+    // Squared, so the low end of the slider is actually quiet.
+    const gain = (input) => (input.value / 10) ** 2;
+
+    function sendGain() {
+      for (const id of ['music', 'sfx']) $(id).nextElementSibling.textContent = $(id).value;
+      if (node) node.port.postMessage({ type: 'gain', music: gain($('music')), sfx: gain($('sfx')) });
+    }
+
+    for (const [name, song] of Object.entries(SONGS)) {
+      const b = document.createElement('button');
+      b.textContent = song.title;
+      b.dataset.song = name;
+      b.onclick = async () => {
+        (await sid()).port.postMessage({ type: 'play', name });
+        show(name);
+      };
+      $('songs').append(b);
+    }
+    for (const name of Object.keys(SFX)) {
+      const b = document.createElement('button');
+      b.textContent = name;
+      b.onclick = async () => (await sid()).port.postMessage({ type: 'sfx', name });
+      $('effects').append(b);
+    }
+    $('stop').onclick = async () => {
+      (await sid()).port.postMessage({ type: 'stop' });
+      show(null);
+    };
+    $('model').onclick = async (e) => {
+      model = model === 6581 ? 8580 : 6581;
+      e.target.textContent = `Model: ${model}`;
+      (await sid()).port.postMessage({ type: 'model', model });
+    };
+    $('music').oninput = sendGain;
+    $('sfx').oninput = sendGain;
+    sendGain();
+  </script>
+</body>
+</html>
