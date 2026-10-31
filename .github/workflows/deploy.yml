@@ -1,0 +1,65 @@
+# Pubblica l'app (o la demo di una libreria) sul suo sottodominio,
+# sidicio.mindcontact.io, a ogni push su main, con GitHub Pages.
+# Modello: mindcontact-identity/templates/deploy/deploy-app.yml
+#
+# Va online solo ciò che gira nel browser: i file tracciati da git,
+# submodule compresi, senza test, strumenti, documenti e file del repo.
+# Una libreria senza index.html alla radice riceve una pagina che porta
+# alla sua demo in examples/.
+#
+# Nel repo: Pages con sorgente "GitHub Actions" e dominio personalizzato
+# sidicio.mindcontact.io (Settings → Pages). Nel DNS: CNAME sidicio.mindcontact.io →
+# MindContact.github.io, senza proxy. Nessun secret.
+name: deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - name: File pubblicabili in _site/
+        run: |
+          git ls-files --recurse-submodules \
+            | grep -Ev '(^|/)(test|tools|docs|\.github)/|(^|/)(README[^/]*\.md|AGENTS\.md|CONTEXT\.md|start\.sh|package(-lock)?\.json|\.gitmodules|\.gitignore)$' \
+            > "$RUNNER_TEMP/files.txt"
+          rsync -a --files-from="$RUNNER_TEMP/files.txt" ./ _site/
+          if [ ! -f _site/index.html ] && [ -f _site/examples/index.html ]; then
+            printf '%s\n' '<!doctype html><meta charset="utf-8"><title>sidicio.mindcontact.io</title>' \
+              '<meta http-equiv="refresh" content="0; url=examples/"><a href="examples/">examples/</a>' > _site/index.html
+          fi
+          test -f _site/index.html
+          echo "$(wc -l < "$RUNNER_TEMP/files.txt") file"
+      - name: Nessuna email nelle pagine
+        run: |
+          if grep -rqE 'mailto:|[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.(it|net|com|org|io|app|cloud)\b' _site --include=*.html; then
+            echo "::error::indirizzo email trovato nelle pagine"; exit 1
+          fi
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
